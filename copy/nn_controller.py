@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from dnc.controller import Controller
+from controller import Controller
 from tensorflow.contrib.rnn.python.ops.core_rnn_cell import LSTMStateTuple
 
 
