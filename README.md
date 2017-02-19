@@ -10,10 +10,10 @@ Based on the paper's appendix, I sketched the [computational graph](https://docs
 _This is a work in progress_
 --------
 I have a general framework and a couple Jupyter notebooks for debugging. This is not a finished project. It's still very much in the dev stage. I need to:
-1. write unit tests
-2. improve documentation/comments
-3. run it on more difficult tasks
-4. add some nice visualizations
+  1. write unit tests
+  2. improve documentation/comments
+  3. run it on more difficult tasks
+  4. add some nice visualizations
 
 
 Dependencies
