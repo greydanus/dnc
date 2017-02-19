@@ -7,6 +7,8 @@ Implements DeepMind's third nature paper, [Hybrid computing using a neural netwo
 
 Based on the paper's appendix, I sketched the [computational graph](https://docs.google.com/drawings/d/1Fc9eOH1wPw0PbBHWkEH39jik7h7HT9BWAE8ZhSr4hJc/edit?usp=sharing)
 
+Based on Mostafa-Samir's code, I got the copy task to work ([Jupyter notebook](https://github.com/greydanus/dnc/blob/master/copy/copy.ipynb))
+
 _This is a work in progress_
 --------
 I have a general framework and a couple Jupyter notebooks for debugging. This is not a finished project. It's still very much in the dev stage. I need to:
