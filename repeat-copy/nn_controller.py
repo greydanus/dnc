@@ -28,5 +28,8 @@ class NNController(Controller):
         h2 = tf.nn.elu(z2)
         return h2, state
 
+    def update_state(self, update):
+        return tf.group(tf.zeros(1), tf.zeros(1))
+
     def get_state(self):
         return LSTMStateTuple(tf.zeros(1), tf.zeros(1))
