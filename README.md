@@ -7,7 +7,7 @@ Implements DeepMind's third nature paper, [Hybrid computing using a neural netwo
 
 Based on the paper's appendix, I sketched the [computational graph](https://docs.google.com/drawings/d/1Fc9eOH1wPw0PbBHWkEH39jik7h7HT9BWAE8ZhSr4hJc/edit?usp=sharing)
 
-I got the repeat-copy copy task to work ([Jupyter notebook](https://nbviewer.jupyter.org/github/greydanus/dnc/blob/master/repeat-copy/repeat-copy-nn.ipynb))
+I got the repeat-copy task to work ([Jupyter notebook](https://nbviewer.jupyter.org/github/greydanus/dnc/blob/master/repeat-copy/repeat-copy-nn.ipynb))
 
 _This is a work in progress_
 --------
