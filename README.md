@@ -3,11 +3,11 @@ DNC: Differentiable Neural Computer
 
 Implements DeepMind's third nature paper, [Hybrid computing using a neural network with dynamic external memory](http://www.nature.com/nature/journal/v538/n7626/full/nature20101.html) by Graves et. al.
 
-![DNC schema](copy/static/dnc_schema.png?raw=true)
+![Repeat copy results](static/repeat_copy_results.png?raw=true)
 
 Based on the paper's appendix, I sketched the [computational graph](https://docs.google.com/drawings/d/1Fc9eOH1wPw0PbBHWkEH39jik7h7HT9BWAE8ZhSr4hJc/edit?usp=sharing)
 
-Based on Mostafa-Samir's code, I got the copy task to work ([Jupyter notebook](https://nbviewer.jupyter.org/github/greydanus/dnc/blob/master/copy/copy.ipynb))
+I got the repeat-copy copy task to work ([Jupyter notebook](https://nbviewer.jupyter.org/github/greydanus/dnc/blob/master/repeat-copy/repeat-copy-nn.ipynb))
 
 _This is a work in progress_
 --------

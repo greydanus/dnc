@@ -63,7 +63,7 @@ class Controller():
         '''
         raise NotImplementedError("nn_step does not exist")
 
-    def zero_state(self):
+    def get_state(self):
         '''
         Returns the initial state of the controller. If the controller is not recurrent, it still needs to return a dummy value
         Returns: LSTMStateTensor or another type of state tensor
@@ -78,7 +78,7 @@ class Controller():
             controller_dim: the output dimension of the controller
         '''
         test_chi = tf.zeros([self.batch_size, self.chi_dim])
-        nn_output, nn_state = self.nn_step(test_chi, state=None)
+        nn_output, nn_state = self.nn_step(test_chi, state=self.get_state())
         return nn_output.get_shape().as_list()[-1]
 
     def prepare_interface(self, zeta_hat):

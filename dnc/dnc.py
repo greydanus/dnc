@@ -44,7 +44,7 @@ class DNC:
         self.X_tensor_array = self.unstack_time_dim(self.X)
 
         # initialize states
-        nn_state = self.controller.zero_state()
+        nn_state = self.controller.get_state()
         dnc_state = self.memory.zero_state()
 
         # values for which we want a history
@@ -63,7 +63,8 @@ class DNC:
         (_, next_nn_state, next_dnc_state, dnc_hist) = output
 
         # write down the history
-        with tf.control_dependencies(next_dnc_state):
+        controller_dependencies = [self.controller.update_state(next_nn_state)]
+        with tf.control_dependencies(controller_dependencies):
             self.dnc_hist = {self.hist_keys[i]: self.stack_time_dim(v) for i, v in enumerate(dnc_hist)} # convert to dict
 
     def step(self, time, nn_state, dnc_state, dnc_hist):

@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from controller import Controller
-
+from tensorflow.contrib.rnn.python.ops.core_rnn_cell import LSTMStateTuple
 
 """
 A 1-Layer recurrent neural network (LSTM) with 64 hidden nodes
@@ -10,17 +10,17 @@ A 1-Layer recurrent neural network (LSTM) with 64 hidden nodes
 class RNNController(Controller):
 
     def init_controller_params(self):
-        rnn_dim = 64
-        init = tf.truncated_normal_initializer(stddev=0.1, dtype=tf.float32)
-
-        self.params['cell'] = tf.nn.rnn_cell.BasicLSTMCell(rnn_dim, initializer = init)
-        self.params['state'] = tf.Variable(tf.zeros([self.batch_size, rnn_dim]), trainable=False)
-        self.params['output'] = tf.Variable(tf.zeros([self.batch_size, rnn_dim]), trainable=False)
-
+        self.rnn_dim = 64
+        self.lstm_cell = tf.contrib.rnn.core_rnn_cell.BasicLSTMCell(self.rnn_dim)
+        self.state = tf.Variable(tf.zeros([self.batch_size, self.rnn_dim]), trainable=False)
+        self.output = tf.Variable(tf.zeros([self.batch_size, self.rnn_dim]), trainable=False)
 
     def nn_step(self, X, state):
         X = tf.convert_to_tensor(X)
-        return self.params['cell'](X, state)
+        return self.lstm_cell(X, state)
 
-    def zero_state(self):
-        return (self.params['output'], self.params['state'])
+    def update_state(self, update):
+        return tf.group(self.output.assign(update[0]), self.state.assign(update[1]))
+
+    def get_state(self):
+        return LSTMStateTuple(self.output, self.state)
