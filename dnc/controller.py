@@ -77,8 +77,9 @@ class Controller():
         Returns: int
             controller_dim: the output dimension of the controller
         '''
-        test_chi = tf.zeros([self.batch_size, self.chi_dim])
-        nn_output, nn_state = self.nn_step(test_chi, state=self.get_state())
+        with tf.variable_scope("dnc_scope") as scope:
+            test_chi = tf.zeros([self.batch_size, self.chi_dim])
+            nn_output, nn_state = self.nn_step(test_chi, state=self.get_state())
         return nn_output.get_shape().as_list()[-1]
 
     def prepare_interface(self, zeta_hat):

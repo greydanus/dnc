@@ -10,7 +10,7 @@ from memory import Memory
 import os
 
 class DNC:
-    def __init__(self, make_controller, FLAGS):
+    def __init__(self, make_controller, FLAGS, input_steps=None):
         '''
         Builds a TensorFlow graph for the Differentiable Neural Computer. Uses TensorArrays and a while loop for efficiency
         Parameters:
@@ -40,32 +40,60 @@ class DNC:
         self.X = tf.placeholder(tf.float32, [batch_size, None, xlen], name='X')
         self.y = tf.placeholder(tf.float32, [batch_size, None, ylen], name='y')
         self.tsteps = tf.placeholder(tf.int32, name='tsteps')
+        self.input_steps = input_steps if input_steps is not None else self.tsteps
 
         self.X_tensor_array = self.unstack_time_dim(self.X)
 
         # initialize states
-        nn_state = self.controller.get_state()
-        dnc_state = self.memory.zero_state()
+        self.nn_state = self.controller.get_state()
+        self.dnc_state = self.memory.zero_state()
 
         # values for which we want a history
         self.hist_keys = ['y_hat', 'f', 'g_a', 'g_w', 'w_r', 'w_w', 'u']
-        dnc_hist = [tf.TensorArray(tf.float32, self.tsteps) for _ in range(len(self.hist_keys))]
+        dnc_hist = [tf.TensorArray(tf.float32, self.tsteps, clear_after_read=False) for _ in range(len(self.hist_keys))]
 
         # loop through time
-        with tf.variable_scope("while_loop") as scope:
+        with tf.variable_scope("dnc_scope", reuse=True) as scope:
             time = tf.constant(0, dtype=tf.int32)
 
             output = tf.while_loop(
                 cond=lambda time, *_: time < self.tsteps,
                 body=self.step,
-                loop_vars=(time, nn_state, dnc_state, dnc_hist),
+                loop_vars=(time, self.nn_state, self.dnc_state, dnc_hist),
                 )
-        (_, next_nn_state, next_dnc_state, dnc_hist) = output
+        (_, self.next_nn_state, self.next_dnc_state, dnc_hist) = output
 
         # write down the history
-        controller_dependencies = [self.controller.update_state(next_nn_state)]
+        controller_dependencies = [self.controller.update_state(self.next_nn_state)]
         with tf.control_dependencies(controller_dependencies):
             self.dnc_hist = {self.hist_keys[i]: self.stack_time_dim(v) for i, v in enumerate(dnc_hist)} # convert to dict
+
+    def step2(self, time, nn_state, dnc_state, dnc_hist):
+
+        # map from tuple to dict for readability
+        dnc_state = {self.memory.state_keys[i]: v for i, v in enumerate(dnc_state)}
+        dnc_hist = {self.hist_keys[i]: v for i, v in enumerate(dnc_hist)}
+
+        # one full pass!
+        X_t = self.X_tensor_array.read(time)
+        v, zeta, next_nn_state = self.controller.step(X_t, dnc_state['r'], nn_state)
+        next_dnc_state = self.memory.step(zeta, dnc_state)
+        y_hat = self.controller.next_y_hat(v, next_dnc_state['r'])
+
+        dnc_hist['y_hat'] = dnc_hist['y_hat'].write(time, y_hat)
+        dnc_hist['f']   = dnc_hist['f'].write(time, zeta['f'])
+        dnc_hist['g_a'] = dnc_hist['g_a'].write(time, zeta['g_a'])
+        dnc_hist['g_w'] = dnc_hist['g_w'].write(time, zeta['g_w'])
+        dnc_hist['w_r'] = dnc_hist['w_r'].write(time, next_dnc_state['w_r'])
+        dnc_hist['w_w'] = dnc_hist['w_w'].write(time, next_dnc_state['w_w'])
+        dnc_hist['u']   = dnc_hist['u'].write(time, next_dnc_state['u'])
+
+        # map from dict to tuple for tf.while_loop :/
+        next_dnc_state = [next_dnc_state[k] for k in self.memory.state_keys]
+        dnc_hist = [dnc_hist[k] for k in self.hist_keys]
+
+        time += 1
+        return time, next_nn_state, next_dnc_state, dnc_hist
 
     def step(self, time, nn_state, dnc_state, dnc_hist):
         '''
@@ -88,8 +116,15 @@ class DNC:
         dnc_state = {self.memory.state_keys[i]: v for i, v in enumerate(dnc_state)}
         dnc_hist = {self.hist_keys[i]: v for i, v in enumerate(dnc_hist)}
 
+        def use_prev_output():
+            y_prev = tf.concat((dnc_hist['y_hat'].read(time-1), tf.zeros([self.batch_size, self.xlen - self.ylen])), axis=1)
+            return tf.reshape(y_prev, (self.batch_size, self.xlen))
+
+        def use_input_array():
+            return self.X_tensor_array.read(time)
+
         # one full pass!
-        X_t = self.X_tensor_array.read(time)
+        X_t = tf.cond(time < self.input_steps, use_input_array, use_prev_output)
         v, zeta, next_nn_state = self.controller.step(X_t, dnc_state['r'], nn_state)
         next_dnc_state = self.memory.step(zeta, dnc_state)
         y_hat = self.controller.next_y_hat(v, next_dnc_state['r'])

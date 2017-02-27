@@ -1,0 +1,7 @@
+Scribe: Realistic Handriting in Tensorflow
+     by Sam Greydanus
+
+
+	loaded dataset:
+		11895 individual data points
+		5947 batches
