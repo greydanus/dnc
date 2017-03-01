@@ -4,13 +4,13 @@ from controller import Controller
 from tensorflow.contrib.rnn.python.ops.core_rnn_cell import LSTMStateTuple
 
 """
-A 1-Layer recurrent neural network (LSTM) with 64 hidden nodes
+RNN (cell type LSTM) with 128 hidden layers
 """
 
 class RNNController(Controller):
 
     def init_controller_params(self):
-        self.rnn_dim = 150
+        self.rnn_dim = 300
         self.lstm_cell = tf.contrib.rnn.core_rnn_cell.BasicLSTMCell(self.rnn_dim)
         self.state = tf.Variable(tf.zeros([self.batch_size, self.rnn_dim]), trainable=False)
         self.output = tf.Variable(tf.zeros([self.batch_size, self.rnn_dim]), trainable=False)
